@@ -1,0 +1,42 @@
+# Arquivos temporários do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos do Jupyter Notebook
+.ipynb_checkpoints/
+
+# Arquivos de ambiente virtual
+venv/
+env/
+.venv/
+
+# Arquivos do IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Arquivos de log
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+
+# Arquivos grandes de dados (opcional - descomente se não quiser versionar dados)
+# *.db
+# *.csv
+# *.xlsx
+
+# Arquivos do Power BI
+*.pbix
+
+# Arquivos PDF gerados (opcional)
+# *.pdf

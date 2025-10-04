@@ -1,0 +1,32 @@
+
+INSTRUÇÕES PARA POWER BI - ANÁLISE PNAD IBGE
+
+1. IMPORTAR DADOS:
+   - Abra Power BI Desktop
+   - "Obter Dados" → "Texto/CSV"
+   - Selecione: pnad_powerbi_pronto.csv
+   - Clique em "Carregar"
+
+2. VISUALIZAÇÕES RECOMENDADAS:
+
+   PÁGINA 1: VISÃO GERAL
+   - Gráfico de Linha: data_referencia X taxa_desocupacao
+   - Cartão KPI: Última taxa_desocupacao
+   - Cartão KPI: Média histórica
+   - Gráfico de Barras: nivel_desocupacao (contagem)
+
+   PÁGINA 2: ANÁLISE TEMPORAL  
+   - Gráfico de Linha Dupla: taxa_desocupacao + media_movel_4p
+   - Gráfico de Área: variacao_periodo
+   - Tabela: Todos os períodos ordenados
+
+   PÁGINA 3: INSIGHTS
+   - Texto com análises baseadas nos dados
+   - Recomendações para gestores
+
+3. MEDIDAS DAX SUGERIDAS:
+   Taxa Atual = MAX('pnad_powerbi_pronto'[taxa_desocupacao])
+   Tendência = // lógica de alta/baixa
+   Vs Média = [Taxa Atual] - AVERAGE([taxa_desocupacao])
+
+FONTE: PNAD Contínua IBGE | Desenvolvido em Python
