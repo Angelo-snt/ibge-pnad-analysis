@@ -87,8 +87,8 @@ url = "https://apisidra.ibge.gov.br/values/t/6381/n1/all/v/4099/p/all"
     pdf.body_text("Destinos dos dados processados:")
     pdf.code_block("""# Pipeline de carregamento
 1. Banco SQLite: ibge_analise.db (armazenamento local)
-2. Arquivo CSV: pnad_powerbi_pronto.csv (Power BI)
-3. Dataset otimizado para análise""")
+2. Conexão direta Power BI via ODBC
+3. Dataset otimizado para análise em tempo real""")
     
     # 3. ARQUITETURA DA SOLUÇÃO
     pdf.chapter_title('3. ARQUITETURA DA SOLUÇÃO')
@@ -101,7 +101,7 @@ Python Scripts (ETL)
     |
 SQLite Database 
     |
-CSV Otimizado
+Power BI (conexão direta ODBC)
     |
 Power BI Dashboard
     |
@@ -140,8 +140,19 @@ dados_ibge_api (metadados e controles)""")
     
     # 5. VISUALIZAÇÃO NO POWER BI
     pdf.chapter_title('5. VISUALIZAÇÃO NO POWER BI')
-    
-    pdf.section_title('5.1. Estrutura do Dashboard')
+    pdf.section_title('5.1. Conexão Power BI com SQLite')
+    pdf.body_text("""CONEXÃO DIRETA VIA ODBC:
+- Configuração de conexão ODBC com SQLite
+- Importação direta das tabelas do banco
+- Atualização em tempo real dos dados
+- Maior performance e integridade dos dados
+
+BENEFÍCIOS DA CONEXÃO DIRETA:
+- Elimina intermediários (CSV)
+- Dados sempre atualizados
+- Melhor performance
+- Maior confiabilidade""")
+    pdf.section_title('5.2. Estrutura do Dashboard')
     pdf.body_text("""PÁGINA 1 - VISÃO GERAL
 - Gráfico de linha evolutivo da taxa de desocupação
 - KPIs principais (taxa atual, média histórica, variação)
