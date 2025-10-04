@@ -1,0 +1,26 @@
+# Guia: Conexão Power BI com SQLite via ODBC
+
+## Pré-requisitos
+- SQLite ODBC Driver instalado
+- Power BI Desktop
+- Arquivo `ibge_analise.db`
+
+## Passo a Passo
+
+### 1. Instalar Driver ODBC
+- Baixe o SQLite ODBC Driver
+- Instale no sistema
+
+### 2. Configurar DSN
+- Painel de Controle → Ferramentas Administrativas → ODBC
+- Adicione nova fonte de dados SQLite
+- Aponte para `ibge_analise.db`
+
+### 3. Power BI
+- Obter Dados → ODBC
+- Selecione a fonte configurada
+- Importe as tabelas necessárias
+
+## Tabelas Disponíveis
+- `pnad_historico` - Dados brutos
+- `powerbi_otimizado` - Dados tratados
