@@ -15,3 +15,17 @@ Análise da taxa de desocupação brasileira no período de 2012-2024, com insig
 - **FPDF** - Geração de relatórios
 
 ## 📁 Estrutura do Projeto
+
+## 🔗 Conexão Power BI com SQLite
+
+### Método Implementado: Conexão Direta ODBC
+- **Configuração ODBC** para SQLite
+- **Importação direta** das tabelas do banco
+- **Atualização automática** dos dados
+- **Melhor performance** que arquivos CSV
+
+### Vantagens:
+- ✅ Dados sempre atualizados
+- ✅ Elimina arquivos intermediários
+- ✅ Maior velocidade de processamento
+- ✅ Integridade referencial mantida
