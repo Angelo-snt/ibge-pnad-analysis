@@ -1,40 +1,32 @@
 # verificar_dados.py
-import sqlite3
 import pandas as pd
+import sqlite3
 
-def verificar_banco():
-    print("Verificando banco de dados...")
+def verificar_dashboard():
+    print(" VERIFICANDO DADOS DO DASHBOARD...")
+    
+    conn = sqlite3.connect('../data/ibge_analise.db')
     
     try:
-        # Conecta ao banco
-        conn = sqlite3.connect('ibge_analise.db')
+        # Ler dados da tabela dashboard_pnad
+        df = pd.read_sql('SELECT * FROM dashboard_pnad', conn)
         
-        # Lista todas as tabelas
-        cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tabelas = cursor.fetchall()
+        print(f" Total de registros: {len(df)}")
+        print(f" Anos únicos: {sorted(df['ano'].unique())}")
         
-        print(f"Tabelas no banco: {tabelas}")
+        print("\n Períodos por ano:")
+        print(df.groupby('ano').size())
         
-        # Mostra dados de cada tabela
-        for tabela in tabelas:
-            nome_tabela = tabela[0]
-            print(f"\n--- Dados da tabela: {nome_tabela} ---")
-            
-            # Conta registros
-            cursor.execute(f"SELECT COUNT(*) FROM {nome_tabela}")
-            total = cursor.fetchone()[0]
-            print(f"Total de registros: {total}")
-            
-            # Mostra primeiras linhas
-            if total > 0:
-                df = pd.read_sql(f"SELECT * FROM {nome_tabela} LIMIT 3", conn)
-                print(df)
+        print("\n Primeiras linhas:")
+        print(df[['periodo', 'ano', 'trimestre', 'taxa_desocupacao']].head(10))
         
-        conn.close()
+        print(f"\n Taxa mais recente: {df['taxa_desocupacao'].iloc[-1]:.2f}%")
+        print(f" Média histórica: {df['taxa_desocupacao'].mean():.2f}%")
         
     except Exception as e:
-        print(f"Erro: {e}")
+        print(f" Erro: {e}")
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
-    verificar_banco()
+    verificar_dashboard()

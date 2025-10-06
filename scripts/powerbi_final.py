@@ -1,35 +1,48 @@
-# powerbi_final.py
+# powerbi_final.py - VERSÃO ATUALIZADA COM SQLITE
 import pandas as pd
 import sqlite3
-from datetime import datetime
+import numpy as np
+import os
 
 def criar_dataset_powerbi():
     print("Criando dataset otimizado para Power BI...")
     
-    conn = sqlite3.connect('ibge_analise.db')
+    # Caminho correto para o banco (na pasta data)
+    caminho_banco = "../data/ibge_analise.db"
+    
+    # Verifica se o banco existe
+    if not os.path.exists(caminho_banco):
+        print("Erro: Banco de dados nao encontrado em:", caminho_banco)
+        return None
+    
+    conn = sqlite3.connect(caminho_banco)
     
     try:
-        # Ler dados da tabela powerbi_otimizado
+        # Tenta ler da tabela powerbi_otimizado
         df = pd.read_sql("SELECT * FROM powerbi_otimizado", conn)
+        print("Lendo dados da tabela powerbi_otimizado...")
         
-        # TRATAMENTO AVANÇADO PARA POWER BI
+        if df.empty:
+            print("Nenhum dado encontrado")
+            return None
+        
+        # TRATAMENTO AVANCADO PARA POWER BI
         df_final = df.copy()
         
         # 1. Criar data completa para eixo temporal
-        # Converte "abr-mai-jun 2023" para data
         df_final['data_referencia'] = pd.to_datetime(
-            df_final['periodo'].str[-4:] + '-04-01',  # Usa abril como mês base
+            df_final['periodo'].str[-4:] + '-04-01',
             errors='coerce'
         )
         
-        # 2. Calcular métricas avançadas
+        # 2. Calcular metricas avançadas
         media_historica = df_final['taxa_desocupacao'].mean()
         df_final['vs_media_historica'] = df_final['taxa_desocupacao'] - media_historica
         df_final['status'] = df_final['vs_media_historica'].apply(
-            lambda x: 'Acima da Média' if x > 0 else 'Abaixo da Média'
+            lambda x: 'Acima da Media' if x > 0 else 'Abaixo da Media'
         )
         
-        # 3. Classificar por nível de desocupação
+        # 3. Classificar por nivel de desocupacao
         condicoes = [
             df_final['taxa_desocupacao'] <= 7,
             (df_final['taxa_desocupacao'] > 7) & (df_final['taxa_desocupacao'] <= 10),
@@ -41,7 +54,7 @@ def criar_dataset_powerbi():
         # 4. Ordenar por data
         df_final = df_final.sort_values('data_referencia')
         
-        # 5. Calcular média móvel (suaviza a linha)
+        # 5. Calcular media movel (suaviza a linha)
         df_final['media_movel_4p'] = df_final['taxa_desocupacao'].rolling(window=4, min_periods=1).mean()
         
         # 6. Selecionar colunas finais
@@ -53,17 +66,36 @@ def criar_dataset_powerbi():
         
         df_final = df_final[colunas_finais]
         
-        # Salvar CSV final
-        df_final.to_csv('pnad_powerbi_pronto.csv', index=False, encoding='utf-8-sig')
+        # ========== SALVAMENTO DUPLO ==========
         
-        print(" CSV FINAL CRIADO: pnad_powerbi_pronto.csv")
-        print(f" Total de registros: {len(df_final)}")
+        # 1. SALVAR COMO CSV (para Power BI)
+        caminho_csv = "../data/pnad_powerbi_pronto.csv"
+        df_final.to_csv(caminho_csv, index=False, encoding='utf-8-sig')
+        print(" CSV criado: pnad_powerbi_pronto.csv")
+        
+        # 2. SALVAR NO SQLITE (tabela específica)
+        nome_tabela_sql = "dashboard_pnad"
+        df_final.to_sql(nome_tabela_sql, conn, if_exists='replace', index=False)
+        print(f" Tabela SQLite criada: {nome_tabela_sql}")
+        
+        # 3. VERIFICAR TABELAS EXISTENTES
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tabelas = cursor.fetchall()
+        print(f" Tabelas no banco: {[t[0] for t in tabelas]}")
+        
+        # 4. VERIFICAR DADOS SALVOS
+        cursor.execute(f"SELECT COUNT(*) FROM {nome_tabela_sql}")
+        count = cursor.fetchone()[0]
+        print(f" Registros na tabela {nome_tabela_sql}: {count}")
+        
+        # ========== FIM DO SALVAMENTO ==========
+        
+        print(f" Total de registros processados: {len(df_final)}")
         print(f" Período: {df_final['data_referencia'].min().year} a {df_final['data_referencia'].max().year}")
-        print(f" Amostra dos dados:")
+        print(f" Taxa média: {df_final['taxa_desocupacao'].mean():.2f}%")
+        print(" Amostra dos dados:")
         print(df_final.head(3))
-        
-        # Criar arquivo de instruções
-        criar_instrucoes_powerbi()
         
         return df_final
         
@@ -73,46 +105,5 @@ def criar_dataset_powerbi():
     finally:
         conn.close()
 
-def criar_instrucoes_powerbi():
-    instrucoes = """
-INSTRUÇÕES PARA POWER BI - ANÁLISE PNAD IBGE
-
-1. IMPORTAR DADOS:
-   - Abra Power BI Desktop
-   - "Obter Dados" → "Texto/CSV"
-   - Selecione: pnad_powerbi_pronto.csv
-   - Clique em "Carregar"
-
-2. VISUALIZAÇÕES RECOMENDADAS:
-
-   PÁGINA 1: VISÃO GERAL
-   - Gráfico de Linha: data_referencia X taxa_desocupacao
-   - Cartão KPI: Última taxa_desocupacao
-   - Cartão KPI: Média histórica
-   - Gráfico de Barras: nivel_desocupacao (contagem)
-
-   PÁGINA 2: ANÁLISE TEMPORAL  
-   - Gráfico de Linha Dupla: taxa_desocupacao + media_movel_4p
-   - Gráfico de Área: variacao_periodo
-   - Tabela: Todos os períodos ordenados
-
-   PÁGINA 3: INSIGHTS
-   - Texto com análises baseadas nos dados
-   - Recomendações para gestores
-
-3. MEDIDAS DAX SUGERIDAS:
-   Taxa Atual = MAX('pnad_powerbi_pronto'[taxa_desocupacao])
-   Tendência = // lógica de alta/baixa
-   Vs Média = [Taxa Atual] - AVERAGE([taxa_desocupacao])
-
-FONTE: PNAD Contínua IBGE | Desenvolvido em Python
-"""
-    
-    with open('instrucoes_powerbi.txt', 'w', encoding='utf-8') as f:
-        f.write(instrucoes)
-    
-    print(" Instruções salvas: instrucoes_powerbi.txt")
-
 if __name__ == "__main__":
-    import numpy as np
     criar_dataset_powerbi()
